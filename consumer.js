@@ -1,5 +1,6 @@
 var http = require('http');
 var connect = require('connect');
+var fs = require('fs');
 var qs = require('querystring');
 
 
@@ -12,6 +13,10 @@ var server = http.createServer( function(request, response){
 		request.on('end', function () {
 			var post = qs.parse(body);
 			console.log('This is the Post', post);
+			fs.appendFile('/logs/consumer-log.json', post, function (err) {
+			  if (err) throw err;
+			  console.log('The "data to append" was appended to file!');
+			});
 		});
 	}
 });
