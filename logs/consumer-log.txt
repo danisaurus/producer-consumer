@@ -1,11 +1,4 @@
-[object Object]The ExpressionHello World!was received via aPOSTrequest atundefinedThe Expression Hello World! was received via a POST request at 1445105322436
-The Expression 4+4 was received via a POST request at 1445105991349 || 
-The Expression 4+4 was received via a POST request at 1445107740083 || 
-The Expression 4+4 was received via a POST request at 1445107759783 || 
-The Expression 4+4 was received via a POST request at 1445108043009 || 
-The Expression 4+4 was received via a POST request at 1445108388846 || 
-The Expression 4+4 was received via a POST request at 1445108404298 || 
-The Expression 4+4 was received via a POST request at 1445108416209 || 
-The Expression 4+4 was received via a POST request at 1445108458204 || 
-The Expression 4+4 was received via a POST request at 1445108518450 || 
-The Expression 4+4 was received via a POST request at 1445108603069 || 
+
+
+A Post Request  at 1445116894448 with the message 91+1
+A Response occured at 1445116894449 with the message 92

@@ -2,62 +2,56 @@ var http = require('http');
 var connect = require('connect');
 var fs = require('fs');
 var qs = require('querystring');
+var Logger = require('modules/logger.js')
 
+var logger = new Logger();
 
-var server = http.createServer( function(request, response){
+function answerExpression(expression){
+	return eval(expression);
+}
+
+var consumerServer = http.createServer( function(request, response){
 	if (request.method === 'POST') {
-		var body = '';
+		var expression = '';
+		var timestamp;
 		request.on('data', function(data){
-			body += data;
+			expression += data;
+			timestamp = Date.now();
+
 		});
-		request.on('end', function () {
-			var post = qs.parse(body);
-			var requestMethod = request.method;
-			var expression = post.msg;
-			var timestamp = Date.now();
-			var log = 'The Expression ' + post.msg + ' was received via a ' + request.method + ' request at ' + timestamp + ' || \n';
+		// var body = '';
+		request.on('end', function(){
+			var parsedExpression = qs.parse(expression);
+			console.log(parsedExpression);
+			var answer = answerExpression(parsedExpression.msg);
+			console.log(answer);
+			var responseBody = qs.stringify({
+				'msg': answer
+			});
+			var requestEvent = {
+				'message': parsedExpression.msg,
+				'timestamp': timestamp,
+				'eventType': 'POST'
+			}
+			logger.logRequestReceived('logs/consumer-log.txt', requestEvent);
 
-			fs.appendFile('logs/consumer-log.txt', log, function (err) {
-			  if (err) throw err;
-			  console.log('The "data to append" was appended to file!');
-			});
-			var solvedExpression = qs.stringify({
-				'msg': eval(post.msg)
-			});
-			var options = {
-			  hostname: 'localhost',
-			  port: 8000,
-			  method: 'POST',
-			  headers: {
-			    'Content-Type': 'application/x-www-form-urlencoded',
-			    'Content-Length': solvedExpression.length
-			  }
-			};
-			var req = http.request(options, function(res) {
-			  console.log('STATUS: ' + res.statusCode);
-			  console.log('HEADERS: ' + JSON.stringify(res.headers));
-			  res.setEncoding('utf8');
-			  res.on('data', function (chunk) {
-			    console.log('BODY: ' + chunk);
-			  });
-			  res.on('end', function() {
-			    console.log('No more data in response.')
-			  });
+			response.writeHead(200, {
+			  'Content-Length': responseBody.length,
+			  'Content-Type': 'text/plain'
 			});
 
-
-			req.on('error', function(e) {
-			  console.log('problem with request: ' + e.message);
+			response.write(responseBody, function(){
+				var responseEvent = {
+					'message': answer,
+					'timestamp': Date.now(),
+				}
+				logger.logResponseSent('logs/consumer-log.txt', responseEvent);
 			});
-
-			// write data to request body
-			req.write(solvedExpression);
-			req.end();
 		});
 	}
 });
 
-server.listen(3000);
+consumerServer.listen(3000);
 console.log('Server is listening on Port 3000');
 
 
