@@ -2,18 +2,18 @@ var http = require('http');
 var connect = require('connect');
 var fs = require('fs');
 var qs = require('querystring');
-var ExpressionGenerator = require('modules/expression-generator.js');
-var Logger = require('modules/logger.js')
+var ExpressionGenerator = require('./modules/expression-generator.js');
+var Logger = require('./modules/logger.js');
 
 var expressionGenerator = new ExpressionGenerator();
 var logger = new Logger();
-
-
 var expression = expressionGenerator.arithmeticExpression();
+
 
 var postData = qs.stringify({
   'msg' : expression
 });
+
 
 var options = {
   hostname: 'localhost',
@@ -26,9 +26,9 @@ var options = {
 };
 
 var req = http.request(options, function(res) {
-	res.setEncoding('utf8');
 	var answer = '';
 	var timestamp;
+	res.setEncoding('utf8');
 	res.on('data', function (data) {
 		answer += data
 		timestamp = Date.now();
@@ -43,12 +43,16 @@ var req = http.request(options, function(res) {
 	});
 });
 
-request.on('error', function(e) {
-  console.log('problem with request: ' + e.message);
+req.on('error', function(e) {
+  var errorEvent = {
+  	'message': 'problem with request:' + e.message,
+  	'timestamp': Date.now()
+  }
+  logger.logError('logs/producer-log.txt', errorEvent)
 });
 
 // write data to request body
-request.write(postData, function(){
+req.write(postData, function(){
 	var parsedPostData = qs.parse(postData);
 	var requestEvent = {
 		'message': parsedPostData.msg,
@@ -57,17 +61,6 @@ request.write(postData, function(){
 	}
 	logger.logRequestSent('logs/producer-log', requestEvent)
 });
-// req.write(postData, function(){
-// 	console.log(postData);
-// 	var post = qs.parse(postData);
-// 	var timestamp = Date.now();
-// 	var log = 'The Expression ' + post.msg + ' was sent at ' + timestamp + ' || \n';
 
-// 	fs.appendFile('logs/producer-log.txt', log, function (err) {
-// 	  if (err) throw err;
-// 	  console.log('The "data to append" was appended to file!');
-// 	});
 
-// });
-
-request.end();
+req.end();

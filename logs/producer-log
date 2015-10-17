@@ -1,8 +1,1 @@
-A response received occured at 1445116310724 with the message function getRandomInteger(){
-	return Math.floor(Math.random() * 100);
-}+function getRandomInteger(){
-	return Math.floor(Math.random() * 100);
-}
-A response received occured at 1445116611267with the message87+5
-A response received occured at 1445116750794with the message75+44
-A response received occured at 1445116894449with the message91+1
+A POST request was sent at 1445121181660 with the expression 16+47

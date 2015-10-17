@@ -2,29 +2,27 @@ var http = require('http');
 var connect = require('connect');
 var fs = require('fs');
 var qs = require('querystring');
-var Logger = require('modules/logger.js')
+var Logger = require('./modules/logger.js');
 
 var logger = new Logger();
 
 function answerExpression(expression){
 	return eval(expression);
-}
+};
 
-var consumerServer = http.createServer( function(request, response){
-	if (request.method === 'POST') {
+var server = http.createServer( function(req, res){
+	if (req.method === 'POST') {
 		var expression = '';
 		var timestamp;
-		request.on('data', function(data){
+		req.on('data', function(data){
 			expression += data;
 			timestamp = Date.now();
 
 		});
 		// var body = '';
-		request.on('end', function(){
+		req.on('end', function(){
 			var parsedExpression = qs.parse(expression);
-			console.log(parsedExpression);
 			var answer = answerExpression(parsedExpression.msg);
-			console.log(answer);
 			var responseBody = qs.stringify({
 				'msg': answer
 			});
@@ -35,12 +33,12 @@ var consumerServer = http.createServer( function(request, response){
 			}
 			logger.logRequestReceived('logs/consumer-log.txt', requestEvent);
 
-			response.writeHead(200, {
+			res.writeHead(200, {
 			  'Content-Length': responseBody.length,
 			  'Content-Type': 'text/plain'
 			});
 
-			response.write(responseBody, function(){
+			res.write(responseBody, function(){
 				var responseEvent = {
 					'message': answer,
 					'timestamp': Date.now(),
@@ -51,7 +49,7 @@ var consumerServer = http.createServer( function(request, response){
 	}
 });
 
-consumerServer.listen(3000);
+server.listen(3000);
 console.log('Server is listening on Port 3000');
 
 

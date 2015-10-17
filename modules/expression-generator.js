@@ -4,17 +4,17 @@ function getRandomInteger(){
 	return Math.floor(Math.random() * 100);
 }
 
-var expressionGenerator = function(){};
+var ExpressionGenerator = function(){};
 
-expressionGenerator.prototype.arithmeticExpression = function(){
+ExpressionGenerator.prototype.arithmeticExpression = function(){
 	var arithmeticExpression = [];
-	arithmeticExpression.push(getRandomInteger);
+	arithmeticExpression.push(getRandomInteger());
 	arithmeticExpression.push('+');
-	arithmeticExpression.push(getRandomInteger);
+	arithmeticExpression.push(getRandomInteger());
 	return arithmeticExpression.join('');
 }
 
 
 
 
-module.exports = new expressionGenerator;
+module.exports = ExpressionGenerator;

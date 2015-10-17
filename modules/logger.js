@@ -3,7 +3,7 @@ var qs = require('querystring');
 
 
 
-var logger = function(){};
+var Logger = function(){};
 
 function logEvent(file, logStatement) {
 	fs.appendFile(file, logStatement, function (err) {
@@ -12,29 +12,30 @@ function logEvent(file, logStatement) {
 	});
 }
 
-logger.prototype.logRequestReceived = function(file, object){
+Logger.prototype.logRequestReceived = function(file, event){
 	var logStatement = 'A ' + event.eventType + ' request was received at ' + event.timestamp + ' with the expression ' + event.message + '\n';
 	logEvent(file, logStatement);
 }
 
-logger.prototype.logRequestSent = function(file, object){
+Logger.prototype.logRequestSent = function(file, event){
 	var logStatement = 'A ' + event.eventType + ' request was sent at ' + event.timestamp + ' with the expression ' + event.message + '\n';
 	logEvent(file, logStatement);
 }
 
-logger.prototype.logResponseSent = function(file, object){
-	var logStatement = 'A response was sent at' + event.timestamp + ' with the answer ' + event.message + '\n';
+Logger.prototype.logResponseSent = function(file, event){
+	var logStatement = 'A response was sent at ' + event.timestamp + ' with the answer ' + event.message + '\n';
 	logEvent(file, logStatement);
 }
 
-logger.prototype.logResponseReceived = function(file, object){
-	var logStatement = 'A response was recieved at' + event.timestamp + ' with the answer ' + event.message + '\n';
+Logger.prototype.logResponseReceived = function(file, event){
+	var logStatement = 'A response was recieved at ' + event.timestamp + ' with the answer ' + event.message + '\n';
 	logEvent(file, logStatement);
 }
 
-logger.prototype.logError = function(file, object){
-
+Logger.prototype.logError = function(file, event){
+	var logStatement = 'ERROR: There was a ' + event.message + '\n';
+	logEvent(file, logStatement);
 }
 
 
-module.export = new logger;
+module.exports = Logger;

@@ -1,4 +1,3 @@
 
-
-A Post Request  at 1445116894448 with the message 91+1
-A Response occured at 1445116894449 with the message 92
+A POST request was received at 1445121181661 with the expression 16+47
+A response was sent at 1445121181662 with the answer 63
