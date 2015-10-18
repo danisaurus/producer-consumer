@@ -1,66 +1,67 @@
-var http = require('http');
-var connect = require('connect');
-var fs = require('fs');
-var qs = require('querystring');
-var ExpressionGenerator = require('./modules/expression-generator.js');
-var Logger = require('./modules/logger.js');
+'use strict';
+var http = require('http'),
+	qs = require('querystring'),
+	ExpressionGenerator = require('./modules/expression-generator.js'),
+	Logger = require('./modules/logger.js'),
+	expressionGenerator = new ExpressionGenerator(),
+	logger = new Logger(),
+	logFileName = 'logs/producer-log-' + Date.now() + '.txt';
 
-var expressionGenerator = new ExpressionGenerator();
-var logger = new Logger();
-var expression = expressionGenerator.arithmeticExpression();
+function sendExpression(){
+	var postData = qs.stringify({
+			'msg' : expressionGenerator.arithmeticExpression()
+		}),
+		options = {
+			hostname: 'localhost',
+			port: 3000,
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Length': postData.length
+			}
+		},
+		req = http.request(options, function(res) {
+			var answer = '',
+				timestamp;
+			res.setEncoding('utf8');
+			res.on('data', function (data) {
+				answer += data;
+				timestamp = Date.now();
+			});
+			res.on('end', function() {
+				var parsedAnswer = qs.parse(answer),
+					logInfo = {
+						'message': parsedAnswer.msg,
+						'timestamp': timestamp
+					};
+				logger.logResponseReceived(logFileName, logInfo);
+			});
+		});
 
-
-var postData = qs.stringify({
-  'msg' : expression
-});
-
-
-var options = {
-  hostname: 'localhost',
-  port: 3000,
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Content-Length': postData.length
-  }
-};
-
-var req = http.request(options, function(res) {
-	var answer = '';
-	var timestamp;
-	res.setEncoding('utf8');
-	res.on('data', function (data) {
-		answer += data
-		timestamp = Date.now();
+	req.on('error', function(e) {
+	  var logInfo = {
+	  	'message': 'problem with request:' + e.message,
+	  	'timestamp': Date.now()
+	  };
+	  logger.logError(logFileName, logInfo);
 	});
-	res.on('end', function() {
-		var parsedAnswer = qs.parse(answer);
-		var responseEvent = {
-			'message': parsedAnswer.msg,
-			'timestamp': timestamp
-		}
-		logger.logResponseReceived('logs/producer-log.txt', responseEvent);
+
+	req.write(postData, function(){
+		var parsedPostData = qs.parse(postData),
+			timestamp = Date.now(),
+			logInfo = {
+				'message': parsedPostData.msg,
+				'timestamp': timestamp,
+				'eventType': 'POST'
+			};
+		logger.logRequestSent(logFileName, logInfo);
 	});
-});
+	req.end();
+}
 
-req.on('error', function(e) {
-  var errorEvent = {
-  	'message': 'problem with request:' + e.message,
-  	'timestamp': Date.now()
-  }
-  logger.logError('logs/producer-log.txt', errorEvent)
-});
-
-// write data to request body
-req.write(postData, function(){
-	var parsedPostData = qs.parse(postData);
-	var requestEvent = {
-		'message': parsedPostData.msg,
-		'timestamp': Date.now(),
-		'eventType': 'POST'
-	}
-	logger.logRequestSent('logs/producer-log', requestEvent)
-});
+var interval = setInterval(sendExpression, 50);
+setTimeout(function(){
+	clearInterval(interval);
+}, 1000);
 
 
-req.end();

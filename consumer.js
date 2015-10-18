@@ -1,37 +1,34 @@
-var http = require('http');
-var connect = require('connect');
-var fs = require('fs');
-var qs = require('querystring');
-var Logger = require('./modules/logger.js');
-
-var logger = new Logger();
-
-function answerExpression(expression){
-	return eval(expression);
-};
+'use strict';
+var http = require('http'),
+	qs = require('querystring'),
+	Logger = require('./modules/logger.js'),
+	ExpressionEvaluator = require('./modules/expression-evaluator.js'),
+	logger = new Logger(),
+	expressionEvaluator = new ExpressionEvaluator(),
+	logFileName = 'logs/consumer-log-' + Date.now() + '.txt';
 
 var server = http.createServer( function(req, res){
-	if (req.method === 'POST') {
-		var expression = '';
-		var timestamp;
+	if (req.method === 'GET') {
+		var expression = '',
+			timestamp;
+
 		req.on('data', function(data){
 			expression += data;
 			timestamp = Date.now();
-
 		});
-		// var body = '';
 		req.on('end', function(){
-			var parsedExpression = qs.parse(expression);
-			var answer = answerExpression(parsedExpression.msg);
-			var responseBody = qs.stringify({
-				'msg': answer
-			});
-			var requestEvent = {
-				'message': parsedExpression.msg,
-				'timestamp': timestamp,
-				'eventType': 'POST'
-			}
-			logger.logRequestReceived('logs/consumer-log.txt', requestEvent);
+			var parsedExpression = qs.parse(expression),
+				answer = expressionEvaluator.evaluate(parsedExpression.msg),
+				responseBody = qs.stringify({
+					'msg': answer
+				}),
+				logInfo = {
+					'message': parsedExpression.msg,
+					'timestamp': timestamp,
+					'eventType': 'GET'
+				};
+
+			logger.logSuccess(logFileName, logInfo);
 
 			res.writeHead(200, {
 			  'Content-Length': responseBody.length,
@@ -39,48 +36,16 @@ var server = http.createServer( function(req, res){
 			});
 
 			res.write(responseBody, function(){
-				var responseEvent = {
+				var logInfo = {
 					'message': answer,
 					'timestamp': Date.now(),
-				}
-				logger.logResponseSent('logs/consumer-log.txt', responseEvent);
+				};
+				logger.logResponseSent(logFileName, logInfo);
 			});
+			res.end();
 		});
 	}
 });
 
 server.listen(3000);
 console.log('Server is listening on Port 3000');
-
-
-
-
-// var app = connect();
-
-
-
-// app.use('/', function (request, response, next) {
-// 	console.log('REQ:', request);
-// 	if (request.method === 'POST') {
-// 		
-// 		console.log('I am working');
-
-// 	}
-// 	request.on('end', function () {
-//         var post = qs.parse(body);
-//         console.log('This is the Post', post);
-//     });
-// 	next();
-// });
-
-
-
-// var server = http.createServer(
-// );
-
-// server.on("listening", function() {
-// 	console.log('hello, i am listening');
-// });
-
-// server.listen('localhost', 8000);
-

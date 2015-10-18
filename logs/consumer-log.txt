@@ -1,3 +1,0 @@
-
-A POST request was received at 1445121181661 with the expression 16+47
-A response was sent at 1445121181662 with the answer 63
