@@ -1,8 +1,8 @@
 'use strict';
 var http = require('http'),
 	qs = require('querystring'),
-	ExpressionGenerator = require('./modules/expression-generator.js'),
-	Logger = require('./modules/logger.js'),
+	ExpressionGenerator = require('./bin/expression-generator.js'),
+	Logger = require('./bin/logger.js'),
 	expressionGenerator = new ExpressionGenerator(),
 	logger = new Logger(),
 	logFileName = 'logs/producer-log-' + Date.now() + '.txt';
@@ -10,8 +10,8 @@ var http = require('http'),
 function sendExpression(){
 	var postData = qs.stringify({
 			'msg' : expressionGenerator.arithmeticExpression()
-		}),
-		options = {
+		});
+	var options = {
 			hostname: 'localhost',
 			port: 3000,
 			method: 'GET',
@@ -19,8 +19,8 @@ function sendExpression(){
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Content-Length': postData.length
 			}
-		},
-		req = http.request(options, function(res) {
+		};
+	var req = http.request(options, function(res) {
 			var answer = '',
 				timestamp;
 			res.setEncoding('utf8');
@@ -28,40 +28,48 @@ function sendExpression(){
 				answer += data;
 				timestamp = Date.now();
 			});
+			res.on('error', function(e){
+				var logInfo = {
+					'message': 'There was a problem with the response:' + e.message
+				};
+				logger.logError(logFileName, logInfo);
+			});
 			res.on('end', function() {
 				var parsedAnswer = qs.parse(answer),
 					logInfo = {
-						'message': parsedAnswer.msg,
+						'message': 'A response was received',
+						'body': parsedAnswer.msg,
 						'timestamp': timestamp
 					};
-				logger.logResponseReceived(logFileName, logInfo);
+				logger.logSuccess(logFileName, logInfo);
 			});
 		});
 
 	req.on('error', function(e) {
-	  var logInfo = {
-	  	'message': 'problem with request:' + e.message,
-	  	'timestamp': Date.now()
-	  };
-	  logger.logError(logFileName, logInfo);
+		var logInfo = {
+			'message': 'problem with request:' + e.message,
+			'timestamp': Date.now()
+			};
+		logger.logError(logFileName, logInfo);
 	});
 
 	req.write(postData, function(){
 		var parsedPostData = qs.parse(postData),
 			timestamp = Date.now(),
 			logInfo = {
-				'message': parsedPostData.msg,
-				'timestamp': timestamp,
-				'eventType': 'POST'
+				'message': 'A GET request was sent', 
+				'body': parsedPostData.msg,
+				'timestamp': timestamp
 			};
-		logger.logRequestSent(logFileName, logInfo);
+		logger.logSuccess(logFileName, logInfo);
 	});
+
 	req.end();
 }
 
 var interval = setInterval(sendExpression, 50);
 setTimeout(function(){
 	clearInterval(interval);
-}, 1000);
+}, 10000);
 
 

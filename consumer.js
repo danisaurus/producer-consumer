@@ -1,8 +1,8 @@
 'use strict';
 var http = require('http'),
 	qs = require('querystring'),
-	Logger = require('./modules/logger.js'),
-	ExpressionEvaluator = require('./modules/expression-evaluator.js'),
+	Logger = require('./bin/logger.js'),
+	ExpressionEvaluator = require('./bin/expression-evaluator.js'),
 	logger = new Logger(),
 	expressionEvaluator = new ExpressionEvaluator(),
 	logFileName = 'logs/consumer-log-' + Date.now() + '.txt';
@@ -23,9 +23,9 @@ var server = http.createServer( function(req, res){
 					'msg': answer
 				}),
 				logInfo = {
-					'message': parsedExpression.msg,
+					'message': 'A GET Request Was Receieved',
+					'body': parsedExpression.msg,
 					'timestamp': timestamp,
-					'eventType': 'GET'
 				};
 
 			logger.logSuccess(logFileName, logInfo);
@@ -37,10 +37,11 @@ var server = http.createServer( function(req, res){
 
 			res.write(responseBody, function(){
 				var logInfo = {
-					'message': answer,
-					'timestamp': Date.now(),
+					'message': 'A response was sent',
+					'body': answer,
+					'timestamp': Date.now()
 				};
-				logger.logResponseSent(logFileName, logInfo);
+				logger.logSuccess(logFileName, logInfo);
 			});
 			res.end();
 		});
