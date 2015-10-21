@@ -2,10 +2,16 @@
 var ExpressionGenerator = function(){};
 
 ExpressionGenerator.prototype.arithmeticExpression = function(){
-	var arithmeticExpression = [];
-	arithmeticExpression.push(getRandomInteger());
-	arithmeticExpression.push(getRandomOperation());
-	arithmeticExpression.push(getRandomInteger());
+	
+	var randomInteger1 = getRandomInteger(),
+		randomInteger2 = getRandomInteger(),
+		randomOperation = getRandomOperation(),
+		arithmeticExpression = [];
+
+	arithmeticExpression.push(randomInteger1);
+	arithmeticExpression.push(randomOperation);
+	arithmeticExpression.push(randomInteger2);
+	
 	return arithmeticExpression.join('');
 };
 

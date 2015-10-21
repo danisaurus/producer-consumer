@@ -1,12 +1,16 @@
 var assert = require('assert'),
-	expressionGenerator = require('../bin/expression-generator.js');
+	ExpressionGenerator = require('../bin/expression-generator.js'),
+	expressionGenerator = new ExpressionGenerator();
+
 
 describe ('expressionGenerator', function(){
 	it ('should return a string', function(){
-		assert.equal(typeof(expressionGenerator.expression), 'string');
+		assert.equal(typeof(expressionGenerator.arithmeticExpression()), 'string');
 	});
 	it ('should return a mathematical expression', function() {
-		var pattern = new RegEx('\b\d+[\+\\\*\\/\\-]\d+\b');
-		assert.ok(pattern.test(expressionGenerator.expression))
+		var arithmeticExpression = expressionGenerator.arithmeticExpression(),
+			pattern = new RegExp(\b\d+[\+\\\*\\\/\\\-]\d+\b);
+
+		assert.ok(\b\d+[\+\\\*\\\/\\\-]\d+\b\i.test('4+4'));
 	});
-})
+});
